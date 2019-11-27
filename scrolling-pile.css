@@ -1,0 +1,51 @@
+:root {
+  --scrolling-speed: .7s;
+  --dots-color: #000000; }
+
+body {
+  margin: 0; }
+
+ul {
+  padding: 0;
+  margin: 0;
+  list-style: none; }
+
+.sp-section {
+  height: 100%;
+  position: absolute !important;
+  width: 100%;
+  backface-visibility: hidden;
+  transition: transform var(--scrolling-speed) ease; }
+.sp-tableCell {
+  width: 100%;
+  height: 100%; }
+.sp-scrollable {
+  overflow-y: scroll;
+  height: 100%; }
+.sp-dotsnav {
+  position: absolute;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 20%; }
+  .sp-dotsnav__item {
+    display: inline-block;
+    height: 15px;
+    width: 15px;
+    border: 5px solid var(--dots-color);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background .3s ease; }
+    .sp-dotsnav__item.active, .sp-dotsnav__item:hover {
+      background: var(--dots-color); }
+
+.big {
+  padding: 2.5rem;
+  box-sizing: border-box;
+  font-size: 5rem; }
+
+/*# sourceMappingURL=scrolling-pile.css.map */
