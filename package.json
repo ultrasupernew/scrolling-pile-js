@@ -1,5 +1,5 @@
 {
-  "name": "scrolling-pile",
+  "name": "@ultrasupernew/scrolling-pile",
   "version": "1.0.0",
   "description": "A basic library based PagePilingJS to create cool scrolling pages sites",
   "main": "scrolling-pile.js",
