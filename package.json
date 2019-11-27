@@ -8,12 +8,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Lauwed/scrolling-pile.git"
+    "url": "git+https://github.com/ultrasupernew/scrolling-pile-js"
   },
   "author": "Laura Durieux",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Lauwed/scrolling-pile/issues"
+    "url": "https://github.com/ultrasupernew/scrolling-pile-js/issues"
   },
-  "homepage": "https://github.com/Lauwed/scrolling-pile#readme"
+  "homepage": "https://github.com/ultrasupernew/scrolling-pile-js#readme"
 }
