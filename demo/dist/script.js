@@ -5,6 +5,7 @@ const test = new ScrollingPile('.container',{
     bulletsColor: '#2196f3',
     positionNav: 'top'
 }, function(obj) {
-    console.log(obj.current);
+    obj.destroy();
+    console.log(obj);
 });
 console.log(test);
