@@ -24,7 +24,7 @@ export default class ScrollingPile {
             positionNumbersNav: options.positionNumbersNav || 'right',
             direction: options.direction || 'vertical',
             touchSensitivity: options.touchSensitivity || 5,
-            backgroundColors: options.backgroundColors || []
+            backgroundColors: options.backgroundColors || [],
         };
 
         // After load callback function
@@ -341,7 +341,6 @@ export default class ScrollingPile {
             if(isAccelarating) {
                 // horizontal
                 if(!isScrollingVertically && this.options.direction === 'horizontal') {
-                    console.log('ok');
                     // Scrolling down
                     if(this.delta < 0) {
                         this.scrolling('right', scrollable);
