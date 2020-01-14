@@ -106,7 +106,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) *
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _scrolling_pile_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../scrolling-pile.js */ \"../scrolling-pile.js\");\n\n\nconst test = new _scrolling_pile_js__WEBPACK_IMPORTED_MODULE_0__[\"default\"]('.container',{\n    scrollingSpeed: 200,\n    dotsColor: '#2196f3',\n    positionDotsNav: 'top',\n    numbersNav: true,\n    numbersColor: '#2196f3',\n    infinite: true,\n    backgroundColors: ['#FCFCFC', '#ACACAC', 'salmon', 'blue'],\n    direction: 'horizontal',\n    autoplay: 100\n}, function(obj) {\n    console.log(obj);\n});\n\n\n//# sourceURL=webpack:///./dist/script.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _scrolling_pile_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../scrolling-pile.js */ \"../scrolling-pile.js\");\n\n\nconst test = new _scrolling_pile_js__WEBPACK_IMPORTED_MODULE_0__[\"default\"]('.container',{\n    scrollingSpeed: 200,\n    dotsColor: '#2196f3',\n    positionDotsNav: 'top',\n    numbersNav: true,\n    numbersColor: '#2196f3',\n    infinite: true,\n    backgroundColors: ['#FCFCFC', '#ACACAC', 'salmon', 'blue'],\n    direction: 'horizontal'\n}, function(obj) {\n    console.log(obj);\n});\n\n\n//# sourceURL=webpack:///./dist/script.js?");
 
 /***/ })
 

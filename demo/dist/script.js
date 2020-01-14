@@ -8,8 +8,7 @@ const test = new ScrollingPile('.container',{
     numbersColor: '#2196f3',
     infinite: true,
     backgroundColors: ['#FCFCFC', '#ACACAC', 'salmon', 'blue'],
-    direction: 'horizontal',
-    autoplay: 100
+    direction: 'horizontal'
 }, function(obj) {
     console.log(obj);
 });
