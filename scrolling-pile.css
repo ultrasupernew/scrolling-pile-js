@@ -1,6 +1,7 @@
 :root {
   --scrolling-speed: .7s;
-  --dots-color: #000000; }
+  --dots-color: #000000;
+  --numbers-color: #000000; }
 
 body {
   margin: 0; }
@@ -26,12 +27,38 @@ ul {
   position: absolute;
   z-index: 100;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  right: 10px;
-  top: 50%;
   transform: translateY(-50%);
   height: 20%; }
+  .sp-dotsnav--center {
+    left: 50%;
+    right: 50%;
+    transform: translate(-50%, -50%);
+    flex-direction: row;
+    height: 50%;
+    width: 30%; }
+  .sp-dotsnav--right {
+    flex-direction: column;
+    right: 10px;
+    top: 50%; }
+  .sp-dotsnav--left {
+    flex-direction: column;
+    left: 5px;
+    top: 50%; }
+  .sp-dotsnav--top {
+    right: 50%;
+    top: 15px;
+    transform: translateX(-50%);
+    flex-direction: row;
+    height: auto;
+    width: 30%; }
+  .sp-dotsnav--bottom {
+    right: 50%;
+    bottom: 15px;
+    transform: translateX(-50%);
+    flex-direction: row;
+    height: auto;
+    width: 30%; }
   .sp-dotsnav__item {
     display: inline-block;
     height: 15px;
@@ -42,6 +69,23 @@ ul {
     transition: background .3s ease; }
     .sp-dotsnav__item.active, .sp-dotsnav__item:hover {
       background: var(--dots-color); }
+.sp-numbersnav {
+  position: absolute;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%); }
+  .sp-numbersnav__item {
+    opacity: .5;
+    cursor: pointer;
+    transition: opacity .3s ease-out; }
+    .sp-numbersnav__item.active, .sp-numbersnav__item:hover {
+      color: var(--numbers-color);
+      opacity: 1; }
+  .sp-numbersnav--right {
+    flex-direction: column;
+    right: 10px;
+    top: 50%; }
 
 .big {
   padding: 2.5rem;

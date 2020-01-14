@@ -1,10 +1,10 @@
 {
   "name": "@ultrasupernew/scrolling-pile",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A basic library based PagePilingJS to create cool scrolling pages sites",
   "main": "scrolling-pile.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "watch": "sass --watch dist/main.scss:scrolling-pile.css"
   },
   "repository": {
     "type": "git",

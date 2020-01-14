@@ -12,15 +12,19 @@ export default class ScrollingPile {
         this.touchStartX;
 
         // Options
+        // TODO : horizontal
         this.options = {
             scrollingSpeed: options.scrollingSpeed || 700,
             dotsNav: options.dotsNav || true,
-            bulletsColor: options.bulletsColor || '#000000',
-            positionNav: options.positionNav || 'right',
+            numbersNav: options.numbersNav || false,
+            infinite: options.infinite || false,
+            dotsColor: options.dotsColor || '#000000',
+            numbersColor: options.numbersColor || '#000000',
+            positionDotsNav: options.positionDotsNav || 'right',
+            positionNumbersNav: options.positionNumbersNav || 'right',
             direction: 'vertical',
             touchSensitivity: options.touchSensitivity || 5,
-            normalScrollElements: options.normalScrollElements || null,
-            normalScrollElementTouchThreshold: options.normalScrollElements || 5,
+            backgroundColors: options.backgroundColors || []
         };
 
         // After load callback function
@@ -36,8 +40,15 @@ export default class ScrollingPile {
         this.slides[0].classList.add('active');
 
         // Updating CSS properties
-        if(this.options.bulletsColor !== "#000000") document.documentElement.style.setProperty('--dots-color', this.options.bulletsColor);
-        if(this.options.scrollingSpeed !== 700) document.documentElement.style.setProperty('--scrolling-speed', this.options.scrollingSpeed/1000 + 's');
+        if(this.options.dotsColor !== "#000000") { // Change the CSS property about the dots color
+            document.documentElement.style.setProperty('--dots-color', this.options.dotsColor);
+        }
+        if(this.options.numbersColor !== "#000000") { // Change the CSS property about the numbers color
+            document.documentElement.style.setProperty('--numbers-color', this.options.numbersColor);
+        }
+        if(this.options.scrollingSpeed !== 700) { // Change the CSS property about the scrolling speed
+            document.documentElement.style.setProperty('--scrolling-speed', this.options.scrollingSpeed/1000 + 's');
+        }
 
         // Put the slides in the right order
         // Wrap the content in an inner div
@@ -46,6 +57,12 @@ export default class ScrollingPile {
             this.slides[i].style.zIndex = this.slides.length - i;
             this.slides[i].classList.add('sp-section');
 
+            // Modify background-color of the slide if defined in the array in options
+            if(i <= this.options.backgroundColors.length-1) {
+                this.slides[i].style.backgroundColor = this.options.backgroundColors[i];
+            }
+
+            // If this is a long slide that can be scrolled before changing slide
             if(!this.isScrollable()) {
                 let innerDiv = document.createElement('div');
                 innerDiv.style.Height = '100%';
@@ -64,51 +81,34 @@ export default class ScrollingPile {
         this.container.style.toucheAction = 'none';
 
         // Create the dot navigation, if true in options
-        if(this.options.dotsNav) this.createDotsNav();
+        if(this.options.dotsNav) {
+            this.createDotsNav();
+        }
+
+        // Create the number navigation, if true in options
+        if(this.options.numbersNav) {
+            this.createNumbersNav();
+        }
 
         // Add the scrolling behavior
         this.scrollingBehavior(true);
     }
 
+    /**
+     * Creates a DOM node for the dot navigation and attaches it to the container Node
+     */
     createDotsNav() {
         let dotsNav = document.createElement('ul');
         dotsNav.classList.add('sp-dotsnav');
 
-        if(this.options.positionNav !== 'right') {
-            if(this.options.positionNav === 'left') {
-                dotsNav.style.right = 'inherit';
-                dotsNav.style.left = '5px';
-            }
-            else if(this.options.positionNav === 'top') {
-                dotsNav.style.right = '50%';
-                dotsNav.style.top = '15px';
-                dotsNav.style.transform = 'translateX(-50%)';
-                dotsNav.style.flexDirection = 'row';
-                dotsNav.style.height = 'auto';
-                dotsNav.style.width = '30%';
-            }
-            else if(this.options.positionNav === 'bottom') {
-                dotsNav.style.right = '50%';
-                dotsNav.style.bottom = '15px';
-                dotsNav.style.transform = 'translateX(-50%)';
-                dotsNav.style.flexDirection = 'row';
-                dotsNav.style.height = 'auto';
-                dotsNav.style.width = '30%';
-            }
-            else if(this.options.positionNav === 'center') {
-                dotsNav.style.right = '50%';
-                dotsNav.style.transform = 'translate(-50%, -50%)';
-                dotsNav.style.flexDirection = 'row';
-                dotsNav.style.height = 'auto';
-                dotsNav.style.width = '30%';
-            }
-        }
+        // Add the css class for the right position
+        dotsNav.classList.add('sp-dotsnav--' + this.options.positionDotsNav);
 
         for(let i = 0; i < this.slides.length; i++) {
             let dotsNavItem = document.createElement('li');
             dotsNavItem.classList.add('sp-dotsnav__item');
             dotsNavItem.dataset.page = i;
-            dotsNavItem.addEventListener('click', this.clickDotsHandler.bind(this));
+            dotsNavItem.addEventListener('click', this.clickNavHandler.bind(this));
             if(i == 0) dotsNavItem.classList.add('active');
             dotsNav.appendChild(dotsNavItem);
         }
@@ -116,11 +116,50 @@ export default class ScrollingPile {
         this.container.appendChild(dotsNav);
         this.dotsNav = dotsNav.children;
     }
+    /**
+     * Creates a DOM node for the number navigation and attaches it to the container Node
+     */
+    createNumbersNav() {
+        let numbersNav = document.createElement('ul');
+        numbersNav.classList.add('sp-numbersnav');
 
-    clickDotsHandler(e) {
+        // Add the css class for the right position
+        numbersNav.classList.add('sp-numbersnav--' + this.options.positionNumbersNav);
+
+        for(let i = 0; i < this.slides.length; i++) {
+            let numbersNavItem = document.createElement('li');
+            numbersNavItem.classList.add('sp-numbersnav__item');
+            numbersNavItem.innerHTML = i+1;
+            numbersNavItem.dataset.page = i;
+            numbersNavItem.addEventListener('click', this.clickNavHandler.bind(this));
+            if(i == 0) numbersNavItem.classList.add('active');
+            numbersNav.appendChild(numbersNavItem);
+        }
+
+        this.container.appendChild(numbersNav);
+        this.numbersNav = numbersNav.children;
+    }
+
+    /**
+     * Handler function to scroll page when a nav element is clicked
+     * 
+     * @param {event} e 
+     */
+    clickNavHandler(e) {
+        if(this.current > e.target.dataset.page) {
+            this.delta = 1; // If going up
+        }
+        else {
+            this.delta = -1; // If going down
+        }
         this.scrollPage(this.slides[e.target.dataset.page], e.target.dataset.page);
     }
 
+    /**
+     * Will add or remove event listeners in function of value
+     * 
+     * @param {boolean} value true = add event listeners. false = remove event listeners.
+     */
     scrollingBehavior(value) {
         if(value) {
             this.addMouseWheelHandler();
@@ -132,6 +171,9 @@ export default class ScrollingPile {
         }
     }
 
+    /**
+     * Add the differents event Listeners of the mouse wheel for compatibility.
+     */
     addMouseWheelHandler() {
         if(this.slides[this.current].addEventListener) {
             this.slides[this.current].addEventListener('mousewheel', this.MouseWheelHandler.bind(this), false); //IE9, Chrome, Safari, Opera
@@ -141,6 +183,9 @@ export default class ScrollingPile {
             this.slides[this.current].attachEvent('onmousewheel', this.MouseWheelHandler.bind(this)); //IE 6/7/8
         }
     }
+    /**
+     * Remove all the event Listeners of the mouse wheel for compatibility.
+     */
     removeMouseWheelHandler() {
         if(this.slides[this.current].removeEventListener) {
             this.slides[this.current].removeEventListener('mousewheel', this.MouseWheelHandler.bind(this), false); //IE9, Chrome, Safari, Opera
@@ -151,32 +196,49 @@ export default class ScrollingPile {
         }
     }
 
+    /**
+     * Add the event Listeners touchstart and touchmove.
+     */
     addTouchHandler() {
-        this.container.removeEventListener('touchstart ', this.touchStartHandler.bind(this));
         this.container.addEventListener('touchstart', this.touchStartHandler.bind(this));
-        this.container.removeEventListener('touchmove', this.touchMoveHandler.bind(this));
         this.container.addEventListener('touchmove', this.touchMoveHandler.bind(this));
     }
+    /**
+     * Remove the event Listeners touchstart and touchmove.
+     */
     removeTouchHandler() {
         this.container.removeEventListener('touchstart', this.touchStartHandler.bind(this));
         this.container.removeEventListener('touchmove', this.touchMoveHandler.bind(this));
     }
 
     /**
-     * Getting the starting possitions of the touch event
+     * Getting the starting positions of the touch event
+     * 
+     * @param {event} e
      */
     touchStartHandler(e){
         this.touchStartY = e.touches[0].clientY;
         this.touchStartX = e.touches[0].clientX;
     }
 
-    /* Detecting touch events
-        */
-    touchMoveHandler(event){
+    /** 
+     * Manipulations of the touch move event.
+     * Set if this is a scroll up or down.
+     * Manage the history of scrolling.
+     * Decide if the touchmove is consider as a scroll.
+     * 
+     * 
+     * @param {event} e
+     */
+    touchMoveHandler(e){
         let curTime = new Date().getTime();
 
-        if(this.touchStartY > event.touches[0].clientY) this.delta = -1; // If scrolling down
-        else this.delta = 1; // If scrolling up
+        if(this.touchStartY > e.touches[0].clientY) {
+            this.delta = -1; // If scrolling down
+        }
+        else {
+            this.delta = 1; // If scrolling up
+        }
 
         // Limiting the array to 150 (!!memory!!)
         if(this.scrollings.length > 149) {
@@ -184,7 +246,7 @@ export default class ScrollingPile {
         }
 
         // Keeping record of the previous scroll
-        this.scrollings.push(event.touches[0].clientY);
+        this.scrollings.push(e.touches[0].clientY);
 
         // Time difference between the last scroll and this one
         let timeDiff = curTime - this.prevTime;
@@ -197,19 +259,20 @@ export default class ScrollingPile {
             this.scrollings = [];
         }
 
-        // If the current section is not moving
+        // If the current section is not already moving
         if(!this.isMoving()) {
             let averageEnd = this.getAverage(this.scrollings, 10);
             let averageMiddle = this.getAverage(this.scrollings, 70);
             let isAccelarating = averageEnd >= averageMiddle;
             let scrollable = this.isScrollable();
 
-            // If the user scroll enough to passe to another slide
+            // If the user scroll enough to pass to the next slide
             if(isAccelarating) {
-                // Scrolling down ?
+                // Scrolling down
                 if(this.delta < 0) {
                     this.scrolling('down', scrollable);
                 }
+                // Scolling up
                 else if(this.delta > 0) {
                     this.scrolling('up', scrollable);
                 }
@@ -219,6 +282,14 @@ export default class ScrollingPile {
         }
     }
 
+    /**
+     * Manipulations of the mouse wheel event.
+     * Set if this is a scroll up or down.
+     * Manage the history of scrolling.
+     * Decide if the touchmove is consider as a scroll.
+     * 
+     * @param {event} e 
+     */
     MouseWheelHandler(e) {
         let curTime = new Date().getTime();
 
@@ -271,6 +342,11 @@ export default class ScrollingPile {
         }
     }
 
+    /**
+     * Returns if the current slide is already moving or not
+     * 
+     * @return {boolean}
+     */
     isMoving() {
         let timeNow = new Date().getTime();
 
@@ -281,6 +357,12 @@ export default class ScrollingPile {
 
         return false;
     }
+    /**
+     * 
+     * 
+     * @param {Array} elements 
+     * @param {integer} number 
+     */
     getAverage(elements, number) {
         let sum = 0;
 
@@ -293,24 +375,22 @@ export default class ScrollingPile {
 
         return Math.ceil(sum/number);
     }
+
+    /**
+     * Returns if the current slide is a long one that can be scrolled before changing to the next or previous slide.
+     * 
+     * @return {boolean}
+     */
     isScrollable() {
         return this.slides[this.current].classList.contains('sp-scrollable');
     }
 
-    moveSection(type) {
-        let index;
-
-        // Looping to the top if no sections left
-        if(type == 'down' && this.current+1 < this.slides.length) {
-            index = this.current + 1;
-        }
-        else if(type == 'up' && this.current-1 >= 0) {
-            index = this.current - 1;
-        }
-
-        if(typeof index !== 'undefined') this.scrollPage(this.slides[index], index);
-    }
-
+    /**
+     * Will say when to change to the next slide when this is a scrollable slide.
+     * 
+     * @param {string} type 
+     * @param {boolean} scrollable 
+     */
     scrolling(type, scrollable) {
         let check = type == 'down' ? 'bottom' : 'top';
 
@@ -324,16 +404,66 @@ export default class ScrollingPile {
         }
     }
 
+    /**
+     * Update the index of the next slide and execute the scroll page.
+     * 
+     * @param {string} type 
+     */
+    moveSection(type) {
+        let index;
+
+        // Setting the new index in function of the movement
+        if(type == 'down') {
+            if(this.current+1 < this.slides.length) {
+                index = this.current + 1;
+            }
+            // If the option infinite is set to true
+            else if(this.options.infinite) {
+                index = 0;
+                this.delta = 1;
+            }
+        }
+        else if(type == 'up') {
+            if(this.current-1 >= 0) {
+                index = this.current - 1;
+            }
+            // If the option infinite is set to true
+            else if(this.options.infinite) {
+                index = this.slides.length - 1;
+                this.delta = -1;
+            }
+        }
+
+        if(typeof index !== 'undefined') {
+            this.scrollPage(this.slides[index], index);
+        }
+    }
+
+    /**
+     * Calculate if we scrolled at the end or beginning of a scrollable slide.
+     * 
+     * @param {string} check 
+     * @param {Node} elem 
+     * 
+     * @return {boolean}
+     */
     isScrolled(check, elem) {
+        // If we are at the top of the slide
         if(check === 'top' && elem.scrollTop === 0) {
             return true;
         }
+        // If we are at the bottom of the slide
         else if(check == 'bottom' && elem.scrollTop == elem.scrollHeight - elem.clientHeight) {
             return true;
         }
         return false;
     }
 
+    /**
+     * 
+     * @param {integer} destination 
+     * @param {integer} index 
+     */
     scrollPage(destination, index) {
         let v = {
             destination: this.slides[index],
@@ -343,42 +473,33 @@ export default class ScrollingPile {
 
         // Calculate how many sections to move
         v.nbrSectionsToMove = this.sectionsToMove(v.sectionIndex);
-        // Reinitialise the delta, because if nbrSectionsToMove is greater than 1
-        // it means that the user used the dots navigation
-        if(v.nbrSectionsToMove > 1) this.delta = 0;
+        
         // Get the sections to move
         v.sectionsToMove = this.getSectionsToMove(v);
 
         // Quiting when activeSection is the target element
-        if(v.activeSection == v.destination) return;
+        if(v.activeSection == v.destination) {
+            return;
+        }
 
+        // Add and remove active CSS classes
         v.destination.classList.add('active');
         v.activeSection.classList.remove('active');
 
         // Scrolling down (moving sections up making them disappear)
         if(this.delta < 0 || v.sectionIndex > this.current) {
-            v.translate3d = this.getTranslate3d();
+            v.translate3d = 'translate3d(0px, -100%, 0px)';
 
             v.animateSection = v.activeSection;
-
-            this.scrollingBehavior(false);
-            if(this.options.dotsNav) this.dotsNav[this.current].classList.remove('active');
-            this.current += v.nbrSectionsToMove;
-            this.scrollingBehavior(true);
-            if(this.options.dotsNav) this.dotsNav[this.current].classList.add('active');
         }
         // Scrolling up (moving section down to the viewport)
         else {
             v.translate3d = 'translate3d(0px, 0px, 0px)';
 
             v.animateSection = destination;
-
-            this.scrollingBehavior(false);
-            if(this.options.dotsNav) this.dotsNav[this.current].classList.remove('active');
-            this.current -= v.nbrSectionsToMove;
-            this.scrollingBehavior(true);
-            if(this.options.dotsNav) this.dotsNav[this.current].classList.add('active');
         }
+
+        this.updateSlide(this.delta, v.nbrSectionsToMove);
 
         this.performMovement(v);
 
@@ -386,12 +507,65 @@ export default class ScrollingPile {
         this.lastAnimation = timeNow;
     }
 
+    /**
+     * Remove the event listeners on the current slide and add them on the next one.
+     * Update the current index of slide.
+     * Update CSS classes of the navigations.
+     * 
+     * @param {integer} delta 
+     * @param {integer} nbrSectionsToMove 
+     */
+    updateSlide(delta, nbrSectionsToMove) {
+        // Remove the event listeners of the active slide
+        this.scrollingBehavior(false);
+
+        if(this.options.dotsNav) {
+            this.dotsNav[this.current].classList.remove('active');
+        }
+        if(this.options.numbersNav) {
+            this.numbersNav[this.current].classList.remove('active');
+        }
+
+        // Update the current index of the slide
+        if(delta < 0) {
+            this.current += nbrSectionsToMove;
+        }
+        else if(delta > 0) {
+            this.current -= nbrSectionsToMove;
+        }
+
+        // Add the event listeners of the new slide
+        this.scrollingBehavior(true);
+
+        if(this.options.dotsNav) {
+            this.dotsNav[this.current].classList.add('active');
+        }
+        if(this.options.numbersNav) {
+            this.numbersNav[this.current].classList.add('active');
+        }
+    }
+
+    /**
+     * Return the number of sections to move from the current slide
+     * 
+     * @param {integer} nbr 
+     * 
+     * @return {integer}
+     */
     sectionsToMove(nbr) {
         if(this.current - nbr > 0) {
             return this.current - nbr;
         }
         return nbr - this.current;
     }
+
+    /**
+     * Returns an array of all the slides to move from the current through the destination excluded.
+     * 
+     * @param {Object} v 
+     * 
+     * @return {Array}
+     */
     getSectionsToMove(v) {
         let sections = [];
 
@@ -411,9 +585,12 @@ export default class ScrollingPile {
         return sections;
     }
 
-    getTranslate3d() {
-        return 'translate3d(0px, -100%, 0px)';
-    }
+    /**
+     * Do the animation of the changement of slide. CSS translation.
+     * Execute the function after scroll.
+     * 
+     * @param {Object} v 
+     */
     performMovement(v) {
         v.animateSection.style.transform = v.translate3d;
 
@@ -423,10 +600,29 @@ export default class ScrollingPile {
             }
         }
 
+
+        // After the animation, execute the function callback
         setTimeout(this.afterSectionLoads.bind(this), this.options.scrollingSpeed);
     }
 
+    /**
+     * Execute the callback function if it is defines.
+     */
     afterSectionLoads() {
-        if(this.afterLoad) this.afterLoad(this);
+        if(this.afterLoad) {
+            this.afterLoad(this);
+        }
+    }
+
+    /**
+     * Destroy the current ScrollingPile
+     */
+    destroy() {
+        for(this.current = 0; this.current > this.slides; this.current++) {
+            this.scrollingBehavior(false);
+        }
+        this.container.style.overflow = 'inherit';
+        this.container.style.toucheAction = 'inherit';
+        delete this;
     }
 }

@@ -1,6 +1,7 @@
 :root {
   --scrolling-speed: .7s;
   --dots-color: #000000;
+  --numbers-color: #000000;
 }
 body {
   margin: 0;
@@ -32,12 +33,44 @@ ul {
     position: absolute;
     z-index: 100;
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
-    right: 10px;
-    top: 50%;
     transform: translateY(-50%);
     height: 20%;
+
+    &--center {
+      left: 50%;
+      right: 50%;
+      transform: translate(-50%, -50%);
+      flex-direction: row;
+      height: 50%;
+      width: 30%;
+    }
+    &--right {
+      flex-direction: column;
+      right: 10px;
+      top: 50%;
+    }
+    &--left {
+      flex-direction: column;
+      left: 5px;
+      top: 50%;
+    }
+    &--top {
+      right: 50%;
+      top: 15px;
+      transform: translateX(-50%);
+      flex-direction: row;
+      height: auto;
+      width: 30%;
+    }
+    &--bottom {
+      right: 50%;
+      bottom: 15px;
+      transform: translateX(-50%);
+      flex-direction: row;
+      height: auto;
+      width: 30%;
+    }
 
     &__item {
       display: inline-block;
@@ -53,6 +86,35 @@ ul {
         background: var(--dots-color);
       }
     }
+  }
+
+  &-numbersnav {
+    position: absolute;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+
+    &__item {
+      opacity: .5;
+      cursor: pointer;
+
+      transition: opacity .3s ease-out;
+
+      &.active, &:hover {
+        color: var(--numbers-color);
+        opacity: 1;
+      }
+    }
+    &--center {}
+    &--left {}
+    &--right {
+      flex-direction: column;
+      right: 10px;
+      top: 50%;
+    }
+    &--top {}
+    &--bottom {}
   }
 }
 
