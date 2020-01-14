@@ -236,11 +236,14 @@ export default class ScrollingPile {
         if(this.options.direction === 'vertical' && this.touchStartY > e.touches[0].clientY) {
             this.delta = -1; // If scrolling down
         }
-        else if(this.options.direction === 'vertical' && this.touchStartX > e.touches[0].clientX) {
+        else if(this.options.direction === 'horizontal' && this.touchStartX - e.touches[0].clientX > 20) {
             this.delta = -1; // If scrolling right
         }
-        else {
-            this.delta = 1; // If scrolling up or left
+        else if(this.options.direction === 'horizontal' && e.touches[0].clientX - this.touchStartX > 20) {
+            this.delta = 1; // If scrolling left
+        }
+        else if(this.options.direction === 'vertical') {
+            this.delta = 1; // If scrolling up
         }
 
         // Limiting the array to 150 (!!memory!!)
@@ -302,7 +305,7 @@ export default class ScrollingPile {
 
         // Cross-browser wheel delta
         e = e || window.event;
-        let value = e.wheelDelta || -e.deltaY || -e.detail;
+        let value = this.options.direction === 'vertical' ? (e.wheelDelta || -e.deltaY || -e.detail) : -e.deltaX;
         this.delta = Math.max(-1, Math.min(1, value)); // If scrolling up or down
 
         let horizontalDetection = typeof e.wheelDeltaX !== 'undefined' || typeof e.deltaX !== 'undefined';
@@ -336,12 +339,26 @@ export default class ScrollingPile {
 
             // If the user scroll enough to passe to another slide
             if(isAccelarating) {
-                // Scrolling down
-                if(this.delta < 0) {
-                    this.scrolling(this.options.direction === 'vertical' ? 'down' : 'right', scrollable);
+                // horizontal
+                if(!isScrollingVertically && this.options.direction === 'horizontal') {
+                    console.log('ok');
+                    // Scrolling down
+                    if(this.delta < 0) {
+                        this.scrolling('right', scrollable);
+                    }
+                    else if(this.delta > 0) {
+                        this.scrolling('left', scrollable);
+                    }
                 }
-                else if(this.delta > 0) {
-                    this.scrolling(this.options.direction === 'vertical' ? 'up' : 'left', scrollable);
+                // vertical
+                else if(isScrollingVertically && this.options.direction === 'vertical') {
+                    // Scrolling down
+                    if(this.delta < 0) {
+                        this.scrolling('down', scrollable);
+                    }
+                    else if(this.delta > 0) {
+                        this.scrolling('up', scrollable);
+                    }
                 }
             }
 
@@ -402,7 +419,10 @@ export default class ScrollingPile {
         let check = (type === 'down') || (type === 'right') ? 'bottom' : 'top';
 
         if(scrollable) {
-            if(this.isScrolled(check, this.slides[this.current])) {
+            if(this.options.direction === 'vertical' && this.isScrolled(check, this.slides[this.current])) {
+                this.moveSection(type);
+            }
+            else if(this.options.direction === 'horizontal') {
                 this.moveSection(type);
             }
         }
