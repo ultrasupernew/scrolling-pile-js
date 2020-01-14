@@ -7,8 +7,8 @@ const test = new ScrollingPile('.container',{
     numbersNav: true,
     numbersColor: '#2196f3',
     infinite: true,
-    backgroundColors: ['#FCFCFC', '#ACACAC', 'salmon', 'blue']
+    backgroundColors: ['#FCFCFC', '#ACACAC', 'salmon', 'blue'],
+    direction: 'horizontal'
 }, function(obj) {
     console.log(obj);
 });
-console.log(test);

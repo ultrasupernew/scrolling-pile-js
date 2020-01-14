@@ -22,9 +22,9 @@ export default class ScrollingPile {
             numbersColor: options.numbersColor || '#000000',
             positionDotsNav: options.positionDotsNav || 'right',
             positionNumbersNav: options.positionNumbersNav || 'right',
-            direction: 'vertical',
+            direction: options.direction || 'vertical',
             touchSensitivity: options.touchSensitivity || 5,
-            backgroundColors: options.backgroundColors || []
+            backgroundColors: options.backgroundColors || [],
         };
 
         // After load callback function
@@ -147,10 +147,10 @@ export default class ScrollingPile {
      */
     clickNavHandler(e) {
         if(this.current > e.target.dataset.page) {
-            this.delta = 1; // If going up
+            this.delta = 1; // If going up or left
         }
         else {
-            this.delta = -1; // If going down
+            this.delta = -1; // If going down or right
         }
         this.scrollPage(this.slides[e.target.dataset.page], e.target.dataset.page);
     }
@@ -233,10 +233,16 @@ export default class ScrollingPile {
     touchMoveHandler(e){
         let curTime = new Date().getTime();
 
-        if(this.touchStartY > e.touches[0].clientY) {
+        if(this.options.direction === 'vertical' && this.touchStartY > e.touches[0].clientY) {
             this.delta = -1; // If scrolling down
         }
-        else {
+        else if(this.options.direction === 'horizontal' && this.touchStartX - e.touches[0].clientX > 20) {
+            this.delta = -1; // If scrolling right
+        }
+        else if(this.options.direction === 'horizontal' && e.touches[0].clientX - this.touchStartX > 20) {
+            this.delta = 1; // If scrolling left
+        }
+        else if(this.options.direction === 'vertical') {
             this.delta = 1; // If scrolling up
         }
 
@@ -246,7 +252,12 @@ export default class ScrollingPile {
         }
 
         // Keeping record of the previous scroll
-        this.scrollings.push(e.touches[0].clientY);
+        if(this.options.direction === 'vertical') {
+            this.scrollings.push(e.touches[0].clientY);
+        }
+        else if(this.options.direction === 'horizontal') {
+            this.scrollings.push(e.touches[0].clientX);
+        }
 
         // Time difference between the last scroll and this one
         let timeDiff = curTime - this.prevTime;
@@ -270,11 +281,10 @@ export default class ScrollingPile {
             if(isAccelarating) {
                 // Scrolling down
                 if(this.delta < 0) {
-                    this.scrolling('down', scrollable);
+                    this.scrolling(this.options.direction === 'vertical' ? 'down' : 'right', scrollable);
                 }
-                // Scolling up
                 else if(this.delta > 0) {
-                    this.scrolling('up', scrollable);
+                    this.scrolling(this.options.direction === 'vertical' ? 'up' : 'left', scrollable);
                 }
             }
 
@@ -295,7 +305,7 @@ export default class ScrollingPile {
 
         // Cross-browser wheel delta
         e = e || window.event;
-        let value = e.wheelDelta || -e.deltaY || -e.detail;
+        let value = this.options.direction === 'vertical' ? (e.wheelDelta || -e.deltaY || -e.detail) : -e.deltaX;
         this.delta = Math.max(-1, Math.min(1, value)); // If scrolling up or down
 
         let horizontalDetection = typeof e.wheelDeltaX !== 'undefined' || typeof e.deltaX !== 'undefined';
@@ -328,13 +338,26 @@ export default class ScrollingPile {
             let scrollable = this.isScrollable();
 
             // If the user scroll enough to passe to another slide
-            if(isAccelarating && isScrollingVertically) {
-                // Scrolling down ?
-                if(this.delta < 0) {
-                    this.scrolling('down', scrollable);
+            if(isAccelarating) {
+                // horizontal
+                if(!isScrollingVertically && this.options.direction === 'horizontal') {
+                    // Scrolling down
+                    if(this.delta < 0) {
+                        this.scrolling('right', scrollable);
+                    }
+                    else if(this.delta > 0) {
+                        this.scrolling('left', scrollable);
+                    }
                 }
-                else if(this.delta > 0) {
-                    this.scrolling('up', scrollable);
+                // vertical
+                else if(isScrollingVertically && this.options.direction === 'vertical') {
+                    // Scrolling down
+                    if(this.delta < 0) {
+                        this.scrolling('down', scrollable);
+                    }
+                    else if(this.delta > 0) {
+                        this.scrolling('up', scrollable);
+                    }
                 }
             }
 
@@ -392,10 +415,13 @@ export default class ScrollingPile {
      * @param {boolean} scrollable 
      */
     scrolling(type, scrollable) {
-        let check = type == 'down' ? 'bottom' : 'top';
+        let check = (type === 'down') || (type === 'right') ? 'bottom' : 'top';
 
         if(scrollable) {
-            if(this.isScrolled(check, this.slides[this.current])) {
+            if(this.options.direction === 'vertical' && this.isScrolled(check, this.slides[this.current])) {
+                this.moveSection(type);
+            }
+            else if(this.options.direction === 'horizontal') {
                 this.moveSection(type);
             }
         }
@@ -413,7 +439,7 @@ export default class ScrollingPile {
         let index;
 
         // Setting the new index in function of the movement
-        if(type == 'down') {
+        if(type === 'down' || type === 'right') {
             if(this.current+1 < this.slides.length) {
                 index = this.current + 1;
             }
@@ -423,7 +449,7 @@ export default class ScrollingPile {
                 this.delta = 1;
             }
         }
-        else if(type == 'up') {
+        else if(type === 'up' || type === 'left') {
             if(this.current-1 >= 0) {
                 index = this.current - 1;
             }
@@ -486,13 +512,19 @@ export default class ScrollingPile {
         v.destination.classList.add('active');
         v.activeSection.classList.remove('active');
 
-        // Scrolling down (moving sections up making them disappear)
+        // Scrolling (moving sections up making them disappear)
         if(this.delta < 0 || v.sectionIndex > this.current) {
-            v.translate3d = 'translate3d(0px, -100%, 0px)';
+            // down
+            if(this.options.direction === 'vertical') {
+                v.translate3d = 'translate3d(0px, -100%, 0px)';
+            }
+            else if(this.options.direction === 'horizontal') {
+                v.translate3d = 'translate3d(-100%, 0px, 0px)';
+            }
 
             v.animateSection = v.activeSection;
         }
-        // Scrolling up (moving section down to the viewport)
+        // Scrolling up or left (moving section down to the viewport)
         else {
             v.translate3d = 'translate3d(0px, 0px, 0px)';
 
